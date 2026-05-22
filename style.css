@@ -1,0 +1,730 @@
+/* ===================================================
+   ANTIGRAVITY MICROBE NINJA - STYLESHEET
+   Tema Laboratorium Sains Gelap + Efek Neon Premium
+   =================================================== */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Warna Utama */
+    --cyan: #00f5d4;
+    --cyan-dim: #00b89c;
+    --cyan-dark: #003d34;
+    --magenta: #f500d4;
+    --magenta-dim: #b5009b;
+    --magenta-dark: #3d0034;
+    --red: #ff2244;
+    --gold: #ffd700;
+
+    /* Background */
+    --bg-left: #030e0c;
+    --bg-right: #0e030c;
+    --bg-panel: rgba(0, 0, 0, 0.7);
+
+    /* Fonts */
+    --font-sci: 'Orbitron', monospace;
+    --font-num: 'Rajdhani', sans-serif;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    touch-action: none; /* Penting: nonaktifkan scroll/zoom bawaan browser saat menyentuh layar */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* --- Layout Utama --- */
+#game-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.game-side {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
+#side-left {
+    background:
+        radial-gradient(ellipse at 30% 40%, rgba(0,245,212,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,150,100,0.08) 0%, transparent 50%),
+        linear-gradient(160deg, rgba(4,18,16,0.85) 0%, rgba(3,14,12,0.85) 100%),
+        url('bg.png') center/cover no-repeat;
+}
+
+#side-right {
+    background:
+        radial-gradient(ellipse at 70% 40%, rgba(245,0,212,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 20% 80%, rgba(150,0,100,0.08) 0%, transparent 50%),
+        linear-gradient(200deg, rgba(18,4,18,0.85) 0%, rgba(14,3,12,0.85) 100%),
+        url('bg.png') center/cover no-repeat;
+}
+
+/* Grid Lab Digital */
+.game-side::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.07;
+}
+#side-left::before {
+    background-image:
+        linear-gradient(var(--cyan) 1px, transparent 1px),
+        linear-gradient(90deg, var(--cyan) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+#side-right::before {
+    background-image:
+        linear-gradient(var(--magenta) 1px, transparent 1px),
+        linear-gradient(90deg, var(--magenta) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+
+/* Canvas: tampil di belakang HUD */
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: block;
+}
+
+/* --- Pembatas Tengah (Center Divider) --- */
+#center-divider {
+    width: 6px;
+    height: 100%;
+    flex-shrink: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        var(--cyan) 15%,
+        var(--cyan-dim) 40%,
+        var(--magenta-dim) 60%,
+        var(--magenta) 85%,
+        transparent 100%
+    );
+    box-shadow:
+        0 0 12px 3px var(--cyan),
+        0 0 30px 8px rgba(0,245,212,0.3),
+        0 0 60px 15px rgba(245,0,212,0.2);
+    z-index: 10;
+    position: relative;
+    animation: dividerPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes dividerPulse {
+    from {
+        box-shadow:
+            0 0 12px 3px var(--cyan),
+            0 0 30px 8px rgba(0,245,212,0.3),
+            0 0 60px 15px rgba(245,0,212,0.2);
+    }
+    to {
+        box-shadow:
+            0 0 20px 6px var(--magenta),
+            0 0 50px 15px rgba(245,0,212,0.3),
+            0 0 80px 20px rgba(0,245,212,0.2);
+    }
+}
+
+/* --- HUD (Heads-Up Display) --- */
+.hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    padding: 14px 24px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.75) 70%, transparent 100%);
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.team-name {
+    font-family: var(--font-sci);
+    font-size: clamp(14px, 2.5vw, 22px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.score {
+    font-family: var(--font-num);
+    font-size: clamp(16px, 2.8vw, 26px);
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 2px;
+}
+
+.score span {
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Nyawa / Lives */
+.lives {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.heart {
+    width: clamp(16px, 2vw, 22px);
+    height: clamp(16px, 2vw, 22px);
+    position: relative;
+    animation: heartBeat 1.8s ease-in-out infinite;
+}
+
+.heart::before,
+.heart::after {
+    content: '';
+    position: absolute;
+    width: 55%;
+    height: 88%;
+    background: var(--red);
+    border-radius: 50% 50% 0 0;
+    box-shadow: 0 0 6px var(--red), 0 0 14px rgba(255,34,68,0.5);
+}
+.heart::before {
+    left: 50%;
+    transform-origin: 0 100%;
+    transform: rotate(-45deg);
+}
+.heart::after {
+    left: 22%;
+    transform-origin: 100% 100%;
+    transform: rotate(45deg);
+}
+
+.heart.lost::before,
+.heart.lost::after {
+    background: rgba(255,34,68,0.2);
+    box-shadow: none;
+}
+
+@keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    14% { transform: scale(1.15); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.1); }
+    70% { transform: scale(1); }
+}
+
+/* --- Warna Neon --- */
+.text-cyan {
+    color: var(--cyan);
+    text-shadow: 0 0 10px var(--cyan), 0 0 24px rgba(0,245,212,0.5);
+}
+
+.text-magenta {
+    color: var(--magenta);
+    text-shadow: 0 0 10px var(--magenta), 0 0 24px rgba(245,0,212,0.5);
+}
+
+.text-red {
+    color: var(--red);
+    text-shadow: 0 0 10px var(--red), 0 0 24px rgba(255,34,68,0.5);
+}
+
+/* --- UI Overlay (Layar Mulai & Game Over) --- */
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(0,245,212,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 70%, rgba(245,0,212,0.06) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.80) 50%, rgba(0,0,0,0.92) 100%),
+        url('bg.png') center/cover no-repeat;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.panel {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    text-align: center;
+    padding: 40px;
+    max-width: 900px;
+    width: 90%;
+}
+
+.panel.active {
+    display: flex;
+}
+
+/* Judul Glitch Effect */
+.glitch-text {
+    font-family: var(--font-sci);
+    font-size: clamp(32px, 7vw, 70px);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    position: relative;
+    animation: glitch 4s infinite linear;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.glitch-text::before {
+    color: var(--cyan);
+    animation: glitchTop 4s infinite linear;
+    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+}
+
+.glitch-text::after {
+    color: var(--magenta);
+    animation: glitchBot 4s infinite linear;
+    clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch {
+    0%, 90%, 100% { transform: none; }
+    92% { transform: skewX(-2deg); }
+    94% { transform: skewX(2deg); }
+    96% { transform: skewX(0deg); }
+}
+
+@keyframes glitchTop {
+    0%, 90%, 100% { transform: none; opacity: 0; }
+    91% { transform: translate(-3px, -2px); opacity: 0.8; }
+    93% { transform: translate(3px, 2px); opacity: 0.8; }
+    95% { opacity: 0; }
+}
+
+@keyframes glitchBot {
+    0%, 88%, 100% { transform: none; opacity: 0; }
+    89% { transform: translate(3px, 2px); opacity: 0.8; }
+    91% { transform: translate(-3px, -2px); opacity: 0.8; }
+    93% { opacity: 0; }
+}
+
+.subtitle {
+    font-family: var(--font-num);
+    font-size: clamp(14px, 2.5vw, 22px);
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* Kotak Instruksi */
+.instructions-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.instruction-box {
+    padding: 20px 28px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(8px);
+    border: 1px solid;
+    font-family: var(--font-num);
+    font-size: clamp(13px, 1.8vw, 17px);
+    color: rgba(255,255,255,0.75);
+    line-height: 1.8;
+    min-width: 200px;
+}
+
+.instruction-box h3 {
+    font-family: var(--font-sci);
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+}
+
+.border-cyan {
+    border-color: var(--cyan-dim);
+    box-shadow: 0 0 20px rgba(0,245,212,0.15), inset 0 0 20px rgba(0,245,212,0.04);
+}
+
+.border-magenta {
+    border-color: var(--magenta-dim);
+    box-shadow: 0 0 20px rgba(245,0,212,0.15), inset 0 0 20px rgba(245,0,212,0.04);
+}
+
+/* --- Tombol --- */
+.btn {
+    font-family: var(--font-sci);
+    font-size: clamp(14px, 2.2vw, 20px);
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #000;
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    border: none;
+    padding: 16px 48px;
+    border-radius: 50px;
+    cursor: pointer;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 20px rgba(0,245,212,0.4), 0 0 40px rgba(245,0,212,0.2);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--magenta), var(--cyan));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 30px rgba(0,245,212,0.6), 0 0 60px rgba(245,0,212,0.4);
+}
+
+.btn:hover::before { opacity: 1; }
+.btn span { position: relative; z-index: 1; }
+
+.btn:active { transform: scale(0.98); }
+
+/* --- Skor Akhir --- */
+.final-scores {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+}
+
+.final-score-box {
+    font-family: var(--font-sci);
+    text-align: center;
+    padding: 16px 32px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.final-score-box p {
+    font-size: clamp(12px, 1.8vw, 16px);
+    letter-spacing: 3px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+}
+
+.final-score-box h2 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+}
+
+/* --- Efek Screen Shake --- */
+@keyframes shakeLeft {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(-8px) rotate(-1deg); }
+    40% { transform: translateX(8px) rotate(1deg); }
+    60% { transform: translateX(-6px) rotate(-0.5deg); }
+    80% { transform: translateX(6px) rotate(0.5deg); }
+}
+
+@keyframes shakeRight {
+    0%, 100% { transform: translateX(0) rotate(0); }
+    20% { transform: translateX(8px) rotate(1deg); }
+    40% { transform: translateX(-8px) rotate(-1deg); }
+    60% { transform: translateX(6px) rotate(0.5deg); }
+    80% { transform: translateX(-6px) rotate(-0.5deg); }
+}
+
+#side-left.shake { animation: shakeLeft 0.4s ease; }
+#side-right.shake { animation: shakeRight 0.4s ease; }
+
+/* --- Efek Flash Merah Layar (kena bom) --- */
+.damage-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: rgba(255, 30, 60, 0.35);
+    opacity: 0;
+    border-radius: 0;
+}
+
+.damage-flash.active {
+    animation: flashFade 0.5s ease forwards;
+}
+
+@keyframes flashFade {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* --- Teks Skor Pop (Score Popup) --- */
+.score-popup {
+    position: absolute;
+    font-family: var(--font-sci);
+    font-weight: 700;
+    font-size: clamp(16px, 2.5vw, 26px);
+    pointer-events: none;
+    z-index: 6;
+    animation: popUp 1.2s ease forwards;
+    text-shadow: 0 0 10px currentColor;
+}
+
+@keyframes popUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1.2); }
+    60%  { opacity: 1; transform: translateY(-40px) scale(1); }
+    100% { opacity: 0; transform: translateY(-70px) scale(0.8); }
+}
+
+/* --- Sistem Pengaturan Audio Premium --- */
+#audio-controls {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.audio-toggle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px rgba(0, 245, 212, 0.2), 0 0 30px rgba(245, 0, 212, 0.1);
+    outline: none;
+}
+
+.audio-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 0 0 25px rgba(0, 245, 212, 0.4), 0 0 45px rgba(245, 0, 212, 0.3);
+    border-color: rgba(0, 245, 212, 0.5);
+}
+
+.audio-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.audio-toggle-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.3s ease;
+}
+
+/* Audio Panel Pop-up */
+.audio-panel {
+    width: 230px;
+    background: rgba(10, 10, 10, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-image: linear-gradient(135deg, var(--cyan-dim), var(--magenta-dim)) 1;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 4px; /* Perlu 4px karena border-image tidak mendukung border-radius besar di beberapa browser, tapi kita bisa pakai box-shadow untuk melembutkannya */
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 245, 212, 0.1);
+    
+    /* Transisi Slide-up & Fade-in */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.audio-panel.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0) scale(1);
+}
+
+.audio-panel-header {
+    font-family: var(--font-sci);
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+}
+
+.audio-panel-header svg {
+    color: var(--cyan);
+    animation: rotateGear 6s linear infinite;
+}
+
+@keyframes rotateGear {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.volume-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.volume-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sci);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 1px;
+}
+
+.volume-label svg {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.volume-value {
+    margin-left: auto;
+    font-family: var(--font-num);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Volume Slider Custom Styling */
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    transition: background 0.3s;
+    cursor: pointer;
+}
+
+.volume-slider:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Webkit Thumbs */
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.volume-slider.slider-cyan::-webkit-slider-thumb {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+}
+
+.volume-slider.slider-magenta::-webkit-slider-thumb {
+    background: var(--magenta);
+    box-shadow: 0 0 8px var(--magenta);
+}
+
+.volume-slider:hover::-webkit-slider-thumb {
+    transform: scale(1.2);
+}
+
+.volume-slider.slider-cyan:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 12px var(--cyan), 0 0 20px rgba(0, 245, 212, 0.5);
+}
+
+.volume-slider.slider-magenta:hover::-webkit-slider-thumb {
+    box-shadow: 0 0 12px var(--magenta), 0 0 20px rgba(245, 0, 212, 0.5);
+}
+
+/* Firefox Thumbs */
+.volume-slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.volume-slider.slider-cyan::-moz-range-thumb {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+}
+
+.volume-slider.slider-magenta::-moz-range-thumb {
+    background: var(--magenta);
+    box-shadow: 0 0 8px var(--magenta);
+}
+
+.volume-slider:hover::-moz-range-thumb {
+    transform: scale(1.2);
+}
+
+.volume-slider.slider-cyan:hover::-moz-range-thumb {
+    box-shadow: 0 0 12px var(--cyan), 0 0 20px rgba(0, 245, 212, 0.5);
+}
+
+.volume-slider.slider-magenta:hover::-moz-range-thumb {
+    box-shadow: 0 0 12px var(--magenta), 0 0 20px rgba(245, 0, 212, 0.5);
+}
